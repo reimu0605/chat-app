@@ -1,0 +1,83 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  email     String   @unique
+  password  String
+  avatar    String?
+  createdAt DateTime @default(now())
+
+  isOnline Boolean @default(false)
+
+  messages      Message[]
+  conversations ConversationMember[]
+
+  sentRequests     FriendRequest[] @relation("Sender")
+  receivedRequests FriendRequest[] @relation("Receiver")
+}
+
+model Conversation {
+  id        String   @id @default(cuid())
+  isGroup   Boolean  @default(false)
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  messages Message[]
+  members  ConversationMember[]
+}
+
+model ConversationMember {
+  id             String @id @default(cuid())
+  userId         String
+  conversationId String
+
+  user         User         @relation(fields: [userId], references: [id])
+  conversation Conversation @relation(fields: [conversationId], references: [id])
+
+  @@unique([userId, conversationId])
+}
+
+model Message {
+  id             String   @id @default(cuid())
+
+  content        String?
+
+  fileUrl        String?
+  fileName       String?
+  fileType       String?
+  fileSize       Int?
+
+  createdAt      DateTime @default(now())
+  isRead         Boolean  @default(false)
+
+  senderId       String
+  conversationId String
+
+  sender         User @relation(fields: [senderId], references: [id])
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+}
+
+model FriendRequest {
+  id String @id @default(cuid())
+
+  senderId   String
+  receiverId String
+
+  sender   User @relation("Sender", fields: [senderId], references: [id])
+  receiver User @relation("Receiver", fields: [receiverId], references: [id])
+
+  status String @default("PENDING")
+
+  createdAt DateTime @default(now())
+
+  @@unique([senderId, receiverId])
+}
