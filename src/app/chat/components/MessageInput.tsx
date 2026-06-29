@@ -37,12 +37,14 @@ export default function MessageInput({
   loadAll,
   setMessageState,
 }: Props) {
+  console.log("conversationId", conversationId);
     const [file, setFile] = useState<File | null>(null);
     const fileInputRef =
   useRef<HTMLInputElement>(null);
 async function handleSend(
   e: React.FormEvent
 ) {
+  console.log("送信時", conversationId);
   e.preventDefault();
 
   if (!conversationId) {

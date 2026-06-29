@@ -274,6 +274,9 @@ setSentRequests(sentRequestsData);
   sentRequests={sentRequests}
 
 onSelectUser={async (user) => {
+  console.log("conversations", conversations);
+
+  
   setSelectedUser(user);
 
   const conversation = conversations.find((c) =>
@@ -283,9 +286,31 @@ onSelectUser={async (user) => {
   console.log("conversation", conversation);
 
   if (!conversation) {
-    setConversationId(null);
-    return;
-  }
+
+  const res = await fetch("/api/conversations", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "user-id": currentUserId ?? "",
+    },
+    body: JSON.stringify({
+      userId1: currentUserId,
+      userId2: user.id,
+    }),
+  });
+
+  const newConversation = await res.json();
+
+  setConversationId(newConversation.id);
+
+  await loadAll();
+
+shouldScrollRef.current = true;
+
+await loadMessages(newConversation.id);
+
+return;
+}
 
   console.log("conversationId", conversation.id);
 
